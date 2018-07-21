@@ -3,18 +3,18 @@ import re
 
 from bs4 import BeautifulSoup
 
-
+maxms = 0.07
+mvar = 100
 var = 0
 avg = 0
 count = 0
-adj = 2
-
+mult = 2
 csvfile = 'output.csv'
 with open(csvfile, "w") as output:
     writer = csv.writer(output, lineterminator='\n')
     writer.writerow(["Sector","Event","Time in MS"])
     
-    with open("workerpool_profile-30.html") as fp:
+    with open("workerpool_profile-35.html") as fp:
         parse = BeautifulSoup(fp, "html.parser")
 
         for rect in parse.find_all('rect'):
@@ -37,18 +37,19 @@ with open(csvfile, "w") as output:
                 if ms2:
                     SectorMS = ms2.group(1)
                     var = float(var) + float(SectorMS)
+                    count = count +1
                 else:
                     if ms:
                         SectorMS = ms.group(1)
                         var = float(var) + float(SectorMS)
+                        count = count +1
                     
                 if issue:
-                    Sectorissue = issue.group(1)              
-
-            count = count +1 
-        avg = var / count 
+                    Sectorissue = issue.group(1)  
+        avg = (var / count) * mult
+        print(avg)            
         for rect in parse.find_all('rect'):
-                
+            
             text = str(rect.find('title').string)
             lines = text.splitlines()
             SectorMS = ""
@@ -67,15 +68,20 @@ with open(csvfile, "w") as output:
                 if ms2:
                     SectorMS = ms2.group(1)
                     var = float(var) + float(SectorMS)
+                    count = count +1
                 else:
                     if ms:
                         SectorMS = ms.group(1)
                         var = float(var) + float(SectorMS)
+                        count = count +1
                     
                 if issue:
-                    Sectorissue = issue.group(1)              
-
-            count = count +1 
-            if float(SectorMS) >= avg*adj:
+                    Sectorissue = issue.group(1)
+            if float(SectorMS) >= maxms:
                 writer.writerow([Sectornum,Sectorissue,SectorMS])
 
+
+
+            #if mvar < 1:
+            #    break
+            #mvar = mvar - 1
